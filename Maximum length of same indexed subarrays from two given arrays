@@ -1,0 +1,148 @@
+# Python3 program for the above approach 
+import math 
+
+# Stores the segment tree node values 
+seg = [0 for x in range(10000)] 
+INT_MIN = int(-10000000) 
+
+# Function to find maximum element 
+# in the given range 
+def getMax(b, ss, se, qs, qe, index): 
+	
+	# If the query is out of bounds 
+	if (se < qs or ss > qe): 
+		return int(INT_MIN / 2) 
+		
+	# If the segment is completely 
+	# inside the query range 
+	if (ss >= qs and se <= qe): 
+		return seg[index] 
+		
+	# Calculate the mid 
+	mid = int(int(ss) + int((se - ss) / 2)) 
+	
+	# Return maximum in left & right 
+	# of the segment tree recursively 
+	return max(getMax(b, ss, mid, qs, 
+					qe, 2 * index + 1), 
+			getMax(b, mid + 1, se, qs, 
+					qe, 2 * index + 2)) 
+
+# Function to check if it is possible 
+# to have such a subarray of length K 
+def possible(a, b, n, c, k): 
+	
+	sum = int(0) 
+	
+	# Check for first window of size K 
+	for i in range(0, k): 
+		sum += a[i] 
+		
+	# Calculate the total cost and 
+	# check if less than equal to c 
+	total_cost = int(sum * k +
+			getMax(b, 0, n - 1, 
+						0, k - 1, 0)) 
+
+	# If it satisfy the condition 
+	if (total_cost <= c): 
+		return 1
+
+	# Find the sum of current subarray 
+	# and calculate total cost 
+	for i in range (k, n): 
+		
+		# Include the new element 
+		# of current subarray 
+		sum += a[i] 
+		
+		# Discard the element 
+		# of last subarray 
+		sum -= a[i - k] 
+
+		# Calculate total cost 
+		# and check <=c 
+		total_cost = int(sum * k + getMax( 
+			b, 0, n - 1,i - k + 1, i, 0)) 
+
+		# If possible, then 
+		# return true 
+		if (total_cost <= c): 
+			return 1
+			
+	# If it is not possible 
+	return 0
+
+# Function to find maximum length 
+# of subarray such that sum of 
+# maximum element in subarray in brr[] and 
+# sum of subarray in arr[] * K is at most C 
+def maxLength(a, b, n, c): 
+	
+	# Base Case 
+	if (n == 0): 
+		return 0
+
+	# Let maximum length be 0 
+	max_length = int(0) 
+
+	low = 0
+	high = n 
+	
+	# Perform Binary search 
+	while (low <= high): 
+		
+		# Find mid value 
+		mid = int(low + int((high - low) / 2)) 
+		
+		# Check if the current mid 
+		# satisfy the given condition 
+		if (possible(a, b, n, c, mid) != 0): 
+			
+			# If yes, then store length 
+			max_length = mid 
+			low = mid + 1
+			
+		# Otherwise 
+		else: 
+			high = mid - 1
+
+	# Return maximum length stored 
+	return max_length 
+
+# Function that builds segment Tree 
+def build(b, index, s, e): 
+	
+	# If there is only one element 
+	if (s == e): 
+		seg[index] = b[s] 
+		return
+	
+	# Find the value of mid 
+	mid = int(s + int((e - s) / 2)) 
+
+	# Build left and right parts 
+	# of segment tree recursively 
+	build(b, 2 * index + 1, s, mid) 
+	build(b, 2 * index + 2, mid + 1, e) 
+
+	# Update the value at current 
+	# index 
+	seg[index] = max(seg[2 * index + 1], 
+					seg[2 * index + 2]) 
+
+# Driver Code 
+A = [ 1, 2, 1, 6, 5, 5, 6, 1 ] 
+B = [ 14, 8, 15, 15, 9, 10, 7, 12 ]	 
+
+C = int(40) 
+N = len(A) 
+
+# Initialize and Build the 
+# Segment Tree 
+build(B, 0, 0, N - 1) 
+
+# Function Call 
+print((maxLength(A, B, N, C))) 
+
+# This code is contributed by Stream_Cipher
